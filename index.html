@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>M87 — Hacker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:wght@300;400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --black:   #020305;
+      --deep:    #07090f;
+      --glow:    #e07a30;
+      --amber:   #f0a050;
+      --pale:    #c8b49a;
+      --dim:     #3a3028;
+      --mono:    'Space Mono', monospace;
+      --serif:   'Cormorant Garamond', serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black);
+      color: var(--pale);
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.7;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* ─── CUSTOM CURSOR ─────────────────────────────────── */
+    #cursor {
+      position: fixed;
+      width: 6px; height: 6px;
+      background: var(--glow);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 12px 4px rgba(224,122,48,.55);
+      transition: transform .1s;
+    }
+    #cursor-ring {
+      position: fixed;
+      width: 28px; height: 28px;
+      border: 1px solid rgba(224,122,48,.3);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: transform .18s ease, width .2s, height .2s, opacity .2s;
+    }
+
+    /* ─── CANVAS BLACK HOLE ─────────────────────────────── */
+    #cosmos {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ─── LAYOUT ────────────────────────────────────────── */
+    .wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    /* ─── NAV ───────────────────────────────────────────── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 1.6rem 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(to bottom, rgba(2,3,5,.95), transparent);
+    }
+    .nav-logo {
+      font-family: var(--serif);
+      font-size: 1.2rem;
+      font-weight: 300;
+      color: var(--amber);
+      letter-spacing: .08em;
+    }
+    .nav-links { display: flex; gap: 2.2rem; list-style: none; }
+    .nav-links a {
+      color: var(--pale);
+      text-decoration: none;
+      font-size: 11px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      opacity: .7;
+      transition: opacity .2s, color .2s;
+    }
+    .nav-links a:hover { opacity: 1; color: var(--amber); }
+
+    /* ─── HERO ──────────────────────────────────────────── */
+    #hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding-top: 5rem;
+    }
+    .hero-inner { max-width: 580px; }
+
+    .tag {
+      font-size: 10px;
+      letter-spacing: .25em;
+      text-transform: uppercase;
+      color: var(--glow);
+      margin-bottom: 1.8rem;
+      display: flex;
+      align-items: center;
+      gap: .8rem;
+    }
+    .tag::before {
+      content: '';
+      display: inline-block;
+      width: 28px; height: 1px;
+      background: var(--glow);
+    }
+
+    h1 {
+      font-family: var(--serif);
+      font-size: clamp(2.8rem, 6vw, 4.4rem);
+      font-weight: 300;
+      line-height: 1.05;
+      color: #f0ebe4;
+      margin-bottom: 1rem;
+    }
+    h1 em {
+      font-style: italic;
+      color: var(--amber);
+    }
+
+    .hero-sub {
+      font-size: 11.5px;
+      color: var(--pale);
+      opacity: .65;
+      margin-bottom: 2.8rem;
+      max-width: 440px;
+      line-height: 1.9;
+    }
+
+    .btn-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: .6rem;
+      padding: .7rem 1.5rem;
+      font-family: var(--mono);
+      font-size: 10.5px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border: 1px solid;
+      transition: background .2s, color .2s, box-shadow .2s;
+      cursor: none;
+    }
+    .btn-primary {
+      border-color: var(--glow);
+      color: var(--black);
+      background: var(--glow);
+    }
+    .btn-primary:hover {
+      background: var(--amber);
+      box-shadow: 0 0 24px rgba(224,122,48,.45);
+    }
+    .btn-ghost {
+      border-color: rgba(200,180,154,.25);
+      color: var(--pale);
+      background: transparent;
+    }
+    .btn-ghost:hover {
+      border-color: var(--glow);
+      color: var(--amber);
+    }
+
+    /* ─── SECTION SHARED ────────────────────────────────── */
+    section {
+      padding: 7rem 0;
+    }
+    .sec-label {
+      font-size: 10px;
+      letter-spacing: .3em;
+      text-transform: uppercase;
+      color: var(--glow);
+      margin-bottom: 3rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .sec-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(224,122,48,.18);
+      max-width: 200px;
+    }
+    h2 {
+      font-family: var(--serif);
+      font-weight: 300;
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      color: #f0ebe4;
+      margin-bottom: 1.4rem;
+    }
+
+    /* ─── ABOUT ─────────────────────────────────────────── */
+    #about p {
+      opacity: .7;
+      max-width: 560px;
+      margin-bottom: 1rem;
+      line-height: 2;
+    }
+    .coords {
+      margin-top: 2.4rem;
+      display: flex;
+      gap: 3rem;
+    }
+    .coord-item { }
+    .coord-key {
+      font-size: 9px;
+      letter-spacing: .25em;
+      text-transform: uppercase;
+      color: var(--glow);
+      margin-bottom: .25rem;
+    }
+    .coord-val {
+      font-size: 12px;
+      color: #f0ebe4;
+    }
+
+    /* ─── SKILLS ────────────────────────────────────────── */
+    .skill-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1px;
+      background: rgba(224,122,48,.08);
+      border: 1px solid rgba(224,122,48,.08);
+    }
+    .skill-card {
+      background: var(--black);
+      padding: 1.6rem;
+      transition: background .2s;
+    }
+    .skill-card:hover { background: rgba(224,122,48,.04); }
+    .skill-icon {
+      font-size: 1.2rem;
+      margin-bottom: .8rem;
+      display: block;
+    }
+    .skill-name {
+      font-size: 11px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: #f0ebe4;
+      margin-bottom: .4rem;
+    }
+    .skill-desc {
+      font-size: 11px;
+      opacity: .45;
+      line-height: 1.7;
+    }
+
+    /* ─── WRITEUPS ──────────────────────────────────────── */
+    .writeup-list { display: flex; flex-direction: column; gap: 1px; }
+    .writeup-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 1.4rem 0;
+      border-bottom: 1px solid rgba(224,122,48,.08);
+      gap: 1.5rem;
+      transition: padding-left .2s;
+      cursor: none;
+    }
+    .writeup-item:hover { padding-left: .6rem; }
+    .writeup-meta { flex: 1; }
+    .writeup-title {
+      font-family: var(--serif);
+      font-size: 1rem;
+      color: #f0ebe4;
+      margin-bottom: .25rem;
+    }
+    .writeup-tags {
+      display: flex;
+      gap: .5rem;
+      flex-wrap: wrap;
+    }
+    .tag-pill {
+      font-size: 9px;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      padding: .15rem .55rem;
+      border: 1px solid rgba(224,122,48,.3);
+      color: var(--glow);
+    }
+    .writeup-right {
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .writeup-diff {
+      font-size: 9.5px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-bottom: .2rem;
+    }
+    .diff-easy   { color: #6fba8f; }
+    .diff-medium { color: var(--amber); }
+    .diff-hard   { color: #c0504a; }
+    .writeup-date { font-size: 10px; opacity: .4; }
+
+    /* ─── CONTACT ───────────────────────────────────────── */
+    #contact { border-top: 1px solid rgba(224,122,48,.1); }
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: start;
+    }
+    @media (max-width: 600px) {
+      .contact-grid { grid-template-columns: 1fr; gap: 2rem; }
+      .coords { flex-wrap: wrap; gap: 1.5rem; }
+      nav { padding: 1.2rem 1.5rem; }
+    }
+    .contact-desc { opacity: .6; line-height: 2; margin-bottom: 1.8rem; }
+    .link-list { list-style: none; display: flex; flex-direction: column; gap: .8rem; }
+    .link-list a {
+      color: var(--pale);
+      text-decoration: none;
+      font-size: 11.5px;
+      opacity: .6;
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      transition: opacity .2s, color .2s;
+    }
+    .link-list a:hover { opacity: 1; color: var(--amber); }
+    .link-list a::before {
+      content: '→';
+      color: var(--glow);
+      font-size: 10px;
+    }
+
+    .terminal-box {
+      background: var(--deep);
+      border: 1px solid rgba(224,122,48,.15);
+      padding: 1.5rem;
+      font-size: 11px;
+    }
+    .t-line { margin-bottom: .3rem; }
+    .t-prompt { color: var(--glow); }
+    .t-comment { opacity: .35; }
+    .t-value { color: #a8d8b0; }
+    .t-blink {
+      display: inline-block;
+      width: 7px; height: 13px;
+      background: var(--amber);
+      vertical-align: middle;
+      animation: blink 1.1s step-end infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    /* ─── FOOTER ────────────────────────────────────────── */
+    footer {
+      padding: 2.5rem 0;
+      border-top: 1px solid rgba(224,122,48,.06);
+      text-align: center;
+      font-size: 10px;
+      letter-spacing: .15em;
+      opacity: .3;
+    }
+
+    /* ─── SCROLL REVEAL ─────────────────────────────────── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity .7s ease, transform .7s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+<!-- CURSOR -->
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- CANVAS -->
+<canvas id="cosmos"></canvas>
+
+<!-- NAV -->
+<nav>
+  <span class="nav-logo">M87*</span>
+  <ul class="nav-links">
+    <li><a href="#about">about</a></li>
+    <li><a href="#skills">skills</a></li>
+    <li><a href="#writeups">writeups</a></li>
+    <li><a href="#contact">contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="wrap">
+  <section id="hero">
+    <div class="hero-inner">
+      <div class="tag">Security Researcher</div>
+      <h1>Beyond the<br /><em>event horizon.</em></h1>
+      <p class="hero-sub">
+        Exploro sistemas desde su núcleo. Cada vulnerabilidad es una singularidad
+        esperando ser comprendida — no explotada sin propósito.
+      </p>
+      <div class="btn-row">
+        <a href="#writeups" class="btn btn-primary">Ver writeups</a>
+        <a href="#contact"  class="btn btn-ghost">Contacto</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about" class="reveal">
+    <div class="sec-label">01 — About</div>
+    <h2>La masa colapsa.<br />La información persiste.</h2>
+    <p>
+      Hacker autodidacta. Me especializo en análisis de vulnerabilidades web,
+      ingeniería inversa y CTFs. Creo que entender cómo algo se rompe
+      es la única forma real de construirlo bien.
+    </p>
+    <p>
+      Como M87* — 6.5 mil millones de masas solares en un punto —
+      me interesa concentrar conocimiento hasta que revele algo nuevo.
+    </p>
+    <div class="coords">
+      <div class="coord-item">
+        <div class="coord-key">Posición</div>
+        <div class="coord-val">Virgo A · 55 Mly</div>
+      </div>
+      <div class="coord-item">
+        <div class="coord-key">CTFs jugados</div>
+        <div class="coord-val">34</div>
+      </div>
+      <div class="coord-item">
+        <div class="coord-key">CVEs</div>
+        <div class="coord-val">En proceso</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SKILLS -->
+  <section id="skills" class="reveal">
+    <div class="sec-label">02 — Skills</div>
+    <h2>Herramientas de<br />primera línea.</h2>
+    <div class="skill-grid">
+      <div class="skill-card">
+        <span class="skill-icon">⬡</span>
+        <div class="skill-name">Web Pentesting</div>
+        <div class="skill-desc">OWASP Top 10, SQLi, XSS, SSRF, IDOR, deserialization.</div>
+      </div>
+      <div class="skill-card">
+        <span class="skill-icon">◈</span>
+        <div class="skill-name">Reverse Engineering</div>
+        <div class="skill-desc">Ghidra, GDB, análisis de binarios ELF y PE.</div>
+      </div>
+      <div class="skill-card">
+        <span class="skill-icon">◎</span>
+        <div class="skill-name">OSINT</div>
+        <div class="skill-desc">Recon pasivo, footprinting, análisis de infraestructura.</div>
+      </div>
+      <div class="skill-card">
+        <span class="skill-icon">▣</span>
+        <div class="skill-name">Exploit Dev</div>
+        <div class="skill-desc">Buffer overflows, ROP chains, técnicas de bypass.</div>
+      </div>
+      <div class="skill-card">
+        <span class="skill-icon">◐</span>
+        <div class="skill-name">Scripting</div>
+        <div class="skill-desc">Python, Bash, automatización de ataques y análisis.</div>
+      </div>
+      <div class="skill-card">
+        <span class="skill-icon">⊕</span>
+        <div class="skill-name">Criptografía</div>
+        <div class="skill-desc">RSA, curvas elípticas, ataques clásicos sobre cifrados débiles.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WRITEUPS -->
+  <section id="writeups" class="reveal">
+    <div class="sec-label">03 — Writeups</div>
+    <h2>Singularidades<br />documentadas.</h2>
+    <div class="writeup-list">
+
+      <div class="writeup-item">
+        <div class="writeup-meta">
+          <div class="writeup-title">HTB — Photon Lockdown</div>
+          <div class="writeup-tags">
+            <span class="tag-pill">web</span>
+            <span class="tag-pill">lfi</span>
+          </div>
+        </div>
+        <div class="writeup-right">
+          <div class="writeup-diff diff-easy">Easy</div>
+          <div class="writeup-date">2025.11</div>
+        </div>
+      </div>
+
+      <div class="writeup-item">
+        <div class="writeup-meta">
+          <div class="writeup-title">PicoCTF — Buffer Overflow 3</div>
+          <div class="writeup-tags">
+            <span class="tag-pill">pwn</span>
+            <span class="tag-pill">canary</span>
+          </div>
+        </div>
+        <div class="writeup-right">
+          <div class="writeup-diff diff-medium">Medium</div>
+          <div class="writeup-date">2025.09</div>
+        </div>
+      </div>
+
+      <div class="writeup-item">
+        <div class="writeup-meta">
+          <div class="writeup-title">HTB — Apolo</div>
+          <div class="writeup-tags">
+            <span class="tag-pill">ssti</span>
+            <span class="tag-pill">privesc</span>
+          </div>
+        </div>
+        <div class="writeup-right">
+          <div class="writeup-diff diff-hard">Hard</div>
+          <div class="writeup-date">2025.07</div>
+        </div>
+      </div>
+
+      <div class="writeup-item">
+        <div class="writeup-meta">
+          <div class="writeup-title">CTF Nacional — Crypto Challenge #7</div>
+          <div class="writeup-tags">
+            <span class="tag-pill">crypto</span>
+            <span class="tag-pill">rsa</span>
+          </div>
+        </div>
+        <div class="writeup-right">
+          <div class="writeup-diff diff-medium">Medium</div>
+          <div class="writeup-date">2025.05</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact" class="reveal">
+    <div class="sec-label">04 — Contact</div>
+    <div class="contact-grid">
+      <div>
+        <h2>Gravitación<br />selectiva.</h2>
+        <p class="contact-desc">
+          Solo atraigo lo interesante: colaboraciones, CTFs en equipo,
+          bug bounties o proyectos de investigación. No trabajo con sombrero negro.
+        </p>
+        <ul class="link-list">
+          <li><a href="https://github.com/" target="_blank">GitHub</a></li>
+          <li><a href="https://twitter.com/" target="_blank">Twitter / X</a></li>
+          <li><a href="https://hackthebox.com/" target="_blank">HackTheBox</a></li>
+          <li><a href="mailto:tu@email.com">Email cifrado</a></li>
+        </ul>
+      </div>
+      <div class="terminal-box">
+        <div class="t-line"><span class="t-comment"># whois m87hacker</span></div>
+        <div class="t-line"><span class="t-prompt">handle    </span><span class="t-value">m87hacker</span></div>
+        <div class="t-line"><span class="t-prompt">location  </span><span class="t-value">Virgo Supercluster</span></div>
+        <div class="t-line"><span class="t-prompt">pgp       </span><span class="t-value">0xDEAD·BEEF</span></div>
+        <div class="t-line"><span class="t-prompt">status    </span><span class="t-value">online</span></div>
+        <div class="t-line">&nbsp;</div>
+        <div class="t-line"><span class="t-comment"># last seen</span></div>
+        <div class="t-line"><span class="t-prompt">$ </span>_<span class="t-blink"></span></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <div class="wrap">
+    M87* · 6.5×10⁹ M☉ · First imaged 2019 · EHT Collaboration
+  </div>
+</footer>
+
+<script>
+  /* ─── CURSOR ──────────────────────────────────────────── */
+  const cur = document.getElementById('cursor');
+  const ring = document.getElementById('cursor-ring');
+  let mx=0, my=0, rx=0, ry=0;
+  document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; });
+  function animCursor() {
+    cur.style.left = mx+'px'; cur.style.top = my+'px';
+    rx += (mx-rx)*.12; ry += (my-ry)*.12;
+    ring.style.left = rx+'px'; ring.style.top = ry+'px';
+    requestAnimationFrame(animCursor);
+  }
+  animCursor();
+
+  /* ─── CANVAS — STARS + BLACK HOLE GLOW ───────────────── */
+  const canvas = document.getElementById('cosmos');
+  const ctx    = canvas.getContext('2d');
+  let W, H;
+
+  function resize() { W = canvas.width = innerWidth; H = canvas.height = innerHeight; buildStars(); }
+
+  const STAR_COUNT = 260;
+  let stars = [];
+  function buildStars() {
+    stars = [];
+    for (let i=0; i<STAR_COUNT; i++) {
+      stars.push({
+        x: Math.random()*W, y: Math.random()*H,
+        r: Math.random()*1.1+.2,
+        a: Math.random(),
+        da: (Math.random()-.5)*.004,
+        speed: Math.random()*.15+.05,
+      });
+    }
+  }
+
+  /* M87 position — right side, slightly above center */
+  const BH_XR = .72, BH_YR = .38;
+
+  function draw(t) {
+    ctx.clearRect(0,0,W,H);
+
+    const bx = W*BH_XR, by = H*BH_YR;
+
+    /* deep space gradient */
+    const bg = ctx.createRadialGradient(bx,by,0, bx,by,H*.85);
+    bg.addColorStop(0, 'rgba(14,8,4,.9)');
+    bg.addColorStop(.35,'rgba(5,4,8,.8)');
+    bg.addColorStop(1,  'rgba(2,3,5,0)');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0,0,W,H);
+
+    /* accretion disk glow — outer */
+    const diskOuter = ctx.createRadialGradient(bx,by,0, bx,by,H*.38);
+    diskOuter.addColorStop(0,   'rgba(230,120,40,.0)');
+    diskOuter.addColorStop(.18, 'rgba(200,80,20,.18)');
+    diskOuter.addColorStop(.32, 'rgba(160,60,10,.08)');
+    diskOuter.addColorStop(1,   'rgba(0,0,0,0)');
+    ctx.fillStyle = diskOuter;
+    ctx.fillRect(0,0,W,H);
+
+    /* accretion disk — hot ring, animated */
+    const phase = t*0.00038;
+    for (let layer=0; layer<3; layer++) {
+      const rx2 = H*(0.07+layer*.04);
+      const ry2 = rx2*.3;
+      ctx.save();
+      ctx.translate(bx, by);
+      ctx.rotate(.12 + layer*.07);
+      const grad = ctx.createRadialGradient(0,0,0, 0,0,rx2);
+      const alpha = [.55,.35,.18][layer];
+      grad.addColorStop(0,   `rgba(0,0,0,0)`);
+      grad.addColorStop(.7,  `rgba(220,100,30,${alpha})`);
+      grad.addColorStop(.85, `rgba(240,160,60,${alpha*.7})`);
+      grad.addColorStop(1,   `rgba(0,0,0,0)`);
+      ctx.beginPath();
+      ctx.ellipse(0,0, rx2, ry2, 0,0,Math.PI*2);
+      ctx.fillStyle = grad;
+      ctx.fill();
+      ctx.restore();
+    }
+
+    /* shadow of black hole */
+    const shadow = ctx.createRadialGradient(bx,by,0, bx,by,H*.055);
+    shadow.addColorStop(0,   'rgba(2,3,5,1)');
+    shadow.addColorStop(.75, 'rgba(2,3,5,.95)');
+    shadow.addColorStop(1,   'rgba(2,3,5,0)');
+    ctx.fillStyle = shadow;
+    ctx.beginPath();
+    ctx.arc(bx,by, H*.055, 0, Math.PI*2);
+    ctx.fill();
+
+    /* photon ring */
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(bx,by, H*.056, 0, Math.PI*2);
+    ctx.strokeStyle = `rgba(240,160,60,.55)`;
+    ctx.lineWidth = 1.2;
+    ctx.shadowColor = '#e07a30';
+    ctx.shadowBlur = 12;
+    ctx.stroke();
+    ctx.restore();
+
+    /* stars */
+    for (const s of stars) {
+      s.a += s.da;
+      if (s.a<=0||s.a>=1) s.da*=-1;
+      /* drift gently away from BH */
+      s.x += s.speed;
+      if (s.x>W) s.x=0;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(240,225,210,${s.a*.8})`;
+      ctx.fill();
+    }
+
+    requestAnimationFrame(draw);
+  }
+
+  resize();
+  window.addEventListener('resize', resize);
+  requestAnimationFrame(draw);
+
+  /* ─── SCROLL REVEAL ───────────────────────────────────── */
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: .12 });
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>
