@@ -424,7 +424,7 @@
       </p>
       <div class="btn-row">
         <a href="https://ravlito.gitbook.io/ravlito-docs" class="btn btn-primary">Wiki</a>
-        <a href="#contact"  class="btn btn-ghost">Contact</a>
+        <a href="#contact" class="btn btn-ghost">Contact</a>
       </div>
     </div>
   </section>
@@ -434,7 +434,7 @@
     <div class="sec-label">01 — About</div>
     <h2>The crowd surges forward.<br />The information remains.</h2>
     <p>
-      Self-taught hacker. Specialising in web penetration testing, 
+      Self-taught hacker. Specialising in web penetration testing,
       reverse engineering and binary exploitation. I believe that
       understanding how something breaks is the only real way to build it properly.
     </p>
@@ -449,7 +449,7 @@
       </div>
       <div class="coord-item">
         <div class="coord-key">Certifications</div>
-        <div class="coord-val"> CRTA | API-RTA | WEB-RTA | CWES (Cooming) | EWPTxv3 (Coming) </div>
+        <div class="coord-val">CRTA | API-RTA | WEB-RTA | CWES (Coming) | EWPTxv3 (Coming)</div>
       </div>
     </div>
   </section>
@@ -472,22 +472,22 @@
       <div class="skill-card">
         <span class="skill-icon">◎</span>
         <div class="skill-name">OSINT</div>
-        <div class="skill-desc">Building my own Intelx</div>
+        <div class="skill-desc">Building my own Intelx.</div>
       </div>
       <div class="skill-card">
         <span class="skill-icon">▣</span>
-        <div class="skill-name">Binary Explotation</div>
+        <div class="skill-name">Binary Exploitation</div>
         <div class="skill-desc">Buffer overflows, ROP chains.</div>
       </div>
       <div class="skill-card">
         <span class="skill-icon">◐</span>
         <div class="skill-name">Scripting</div>
-        <div class="skill-desc">Python, Bash, C++, C#, Rust</div>
+        <div class="skill-desc">Python, Bash, C++, C#, Rust.</div>
       </div>
       <div class="skill-card">
         <span class="skill-icon">⊕</span>
         <div class="skill-name">AD</div>
-        <div class="skill-desc">Windows Enthusiastic</div>
+        <div class="skill-desc">Windows Enthusiast.</div>
       </div>
     </div>
   </section>
@@ -532,6 +532,23 @@
         </div>
       </a>
 
+      <a href="https://github.com/r4vl1t0/smb_fast_spray.py" target="_blank" style="text-decoration:none; color:inherit; display:block;">
+        <div class="writeup-item">
+          <div class="writeup-meta">
+            <div class="writeup-title">SMB Fast Spray</div>
+            <div class="writeup-tags">
+              <span class="tag-pill">smb</span>
+              <span class="tag-pill">spray</span>
+              <span class="tag-pill">ad</span>
+            </div>
+          </div>
+          <div class="writeup-right">
+            <div class="writeup-diff diff-medium">Tool</div>
+            <div class="writeup-date">github ↗</div>
+          </div>
+        </div>
+      </a>
+
     </div>
   </section>
 
@@ -540,10 +557,10 @@
     <div class="sec-label">04 — Contact</div>
     <div class="contact-grid">
       <div>
-        <h2>Gravitación<br />selectiva.</h2>
+        <h2>Selective<br />gravitation.</h2>
         <p class="contact-desc">
-          Solo atraigo lo interesante: colaboraciones, CTFs en equipo,
-          bug bounties o proyectos de investigación.
+          I only attract what's interesting: collaborations, team CTFs,
+          bug bounties or research projects.
         </p>
         <ul class="link-list">
           <li><a href="https://github.com/r4vl1t0" target="_blank">GitHub</a></li>
@@ -572,7 +589,7 @@
   </div>
 </footer>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
   /* ─── CURSOR ──────────────────────────────────────────── */
   const cur = document.getElementById('cursor');
   const ring = document.getElementById('cursor-ring');
@@ -608,7 +625,6 @@
     }
   }
 
-  /* M87 position — right side, slightly above center */
   const BH_XR = .72, BH_YR = .38;
 
   function draw(t) {
@@ -616,7 +632,6 @@
 
     const bx = W*BH_XR, by = H*BH_YR;
 
-    /* deep space gradient */
     const bg = ctx.createRadialGradient(bx,by,0, bx,by,H*.85);
     bg.addColorStop(0, 'rgba(14,8,4,.9)');
     bg.addColorStop(.35,'rgba(5,4,8,.8)');
@@ -624,7 +639,6 @@
     ctx.fillStyle = bg;
     ctx.fillRect(0,0,W,H);
 
-    /* accretion disk glow — outer */
     const diskOuter = ctx.createRadialGradient(bx,by,0, bx,by,H*.38);
     diskOuter.addColorStop(0,   'rgba(230,120,40,.0)');
     diskOuter.addColorStop(.18, 'rgba(200,80,20,.18)');
@@ -633,8 +647,6 @@
     ctx.fillStyle = diskOuter;
     ctx.fillRect(0,0,W,H);
 
-    /* accretion disk — hot ring, animated */
-    const phase = t*0.00038;
     for (let layer=0; layer<3; layer++) {
       const rx2 = H*(0.07+layer*.04);
       const ry2 = rx2*.3;
@@ -654,7 +666,6 @@
       ctx.restore();
     }
 
-    /* shadow of black hole */
     const shadow = ctx.createRadialGradient(bx,by,0, bx,by,H*.055);
     shadow.addColorStop(0,   'rgba(2,3,5,1)');
     shadow.addColorStop(.75, 'rgba(2,3,5,.95)');
@@ -664,7 +675,6 @@
     ctx.arc(bx,by, H*.055, 0, Math.PI*2);
     ctx.fill();
 
-    /* photon ring */
     ctx.save();
     ctx.beginPath();
     ctx.arc(bx,by, H*.056, 0, Math.PI*2);
@@ -675,11 +685,9 @@
     ctx.stroke();
     ctx.restore();
 
-    /* stars */
     for (const s of stars) {
       s.a += s.da;
       if (s.a<=0||s.a>=1) s.da*=-1;
-      /* drift gently away from BH */
       s.x += s.speed;
       if (s.x>W) s.x=0;
       ctx.beginPath();
