@@ -1,713 +1,1585 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>M87 — Hacker</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:wght@300;400&display=swap" rel="stylesheet" />
+  <meta name="theme-color" content="#020202" />
+  <meta name="description" content="r4vl1t0 — Offensive Security portfolio inspired by M87." />
+  <title>r4vl1t0 / M87 Observatory</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
   <style>
-    :root {
-      --black:   #020305;
-      --deep:    #07090f;
-      --glow:    #e07a30;
-      --amber:   #f0a050;
-      --pale:    #c8b49a;
-      --dim:     #3a3028;
-      --mono:    'Space Mono', monospace;
-      --serif:   'Cormorant Garamond', serif;
+    :root{
+      --bg:#020202;
+      --panel:#08090b;
+      --panel2:#0c0d10;
+      --line:rgba(255,255,255,.075);
+      --line2:rgba(255,154,71,.25);
+      --text:#f1efec;
+      --muted:#8d8b91;
+      --muted2:#56565c;
+      --orange:#ff9747;
+      --amber:#ffc57a;
+      --red:#a84421;
+      --mono:"JetBrains Mono", monospace;
+      --sans:"Sora", sans-serif;
+      --rail:230px;
     }
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    html { scroll-behavior: smooth; }
-
-    body {
-      background: var(--black);
-      color: var(--pale);
-      font-family: var(--mono);
-      font-size: 13px;
-      line-height: 1.7;
-      overflow-x: hidden;
-      cursor: none;
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{
+      min-height:100vh;
+      overflow-x:hidden;
+      background:var(--bg);
+      color:var(--text);
+      font-family:var(--sans);
+      -webkit-font-smoothing:antialiased;
     }
 
-    /* ─── CUSTOM CURSOR ─────────────────────────────────── */
-    #cursor {
-      position: fixed;
-      width: 6px; height: 6px;
-      background: var(--glow);
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 9999;
-      transform: translate(-50%, -50%);
-      box-shadow: 0 0 12px 4px rgba(224,122,48,.55);
-      transition: transform .1s;
-    }
-    #cursor-ring {
-      position: fixed;
-      width: 28px; height: 28px;
-      border: 1px solid rgba(224,122,48,.3);
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 9998;
-      transform: translate(-50%, -50%);
-      transition: transform .18s ease, width .2s, height .2s, opacity .2s;
+    a{color:inherit}
+    button{font:inherit}
+
+    ::selection{
+      background:rgba(255,151,71,.26);
+      color:#fff;
     }
 
-    /* ─── CANVAS BLACK HOLE ─────────────────────────────── */
-    #cosmos {
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-      pointer-events: none;
+    /* GLOBAL ATMOSPHERE */
+    .space{
+      position:fixed;
+      inset:0;
+      z-index:-4;
+      overflow:hidden;
+      pointer-events:none;
+      background:
+        radial-gradient(circle at 64% 26%, rgba(137,52,20,.08), transparent 24rem),
+        radial-gradient(circle at 18% 74%, rgba(90,43,23,.035), transparent 26rem),
+        #020202;
     }
 
-    /* ─── LAYOUT ────────────────────────────────────────── */
-    .wrap {
-      position: relative;
-      z-index: 1;
-      max-width: 780px;
-      margin: 0 auto;
-      padding: 0 2rem;
+    .space::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      opacity:.28;
+      background-image:
+        radial-gradient(circle at 12% 18%, rgba(255,255,255,.45) 0 1px, transparent 1.2px),
+        radial-gradient(circle at 36% 71%, rgba(255,255,255,.26) 0 1px, transparent 1.2px),
+        radial-gradient(circle at 71% 42%, rgba(255,255,255,.30) 0 1px, transparent 1.2px),
+        radial-gradient(circle at 88% 16%, rgba(255,255,255,.42) 0 1px, transparent 1.2px),
+        radial-gradient(circle at 52% 9%, rgba(255,255,255,.22) 0 1px, transparent 1.2px);
+      background-size:240px 240px,310px 310px,270px 270px,360px 360px,420px 420px;
     }
 
-    /* ─── NAV ───────────────────────────────────────────── */
-    nav {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 100;
-      padding: 1.6rem 3rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: linear-gradient(to bottom, rgba(2,3,5,.95), transparent);
-    }
-    .nav-logo {
-      font-family: var(--serif);
-      font-size: 1.2rem;
-      font-weight: 300;
-      color: var(--amber);
-      letter-spacing: .08em;
-    }
-    .nav-links { display: flex; gap: 2.2rem; list-style: none; }
-    .nav-links a {
-      color: var(--pale);
-      text-decoration: none;
-      font-size: 11px;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      opacity: .7;
-      transition: opacity .2s, color .2s;
-    }
-    .nav-links a:hover { opacity: 1; color: var(--amber); }
-
-    /* ─── HERO ──────────────────────────────────────────── */
-    #hero {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      padding-top: 5rem;
-    }
-    .hero-inner { max-width: 580px; }
-
-    .tag {
-      font-size: 10px;
-      letter-spacing: .25em;
-      text-transform: uppercase;
-      color: var(--glow);
-      margin-bottom: 1.8rem;
-      display: flex;
-      align-items: center;
-      gap: .8rem;
-    }
-    .tag::before {
-      content: '';
-      display: inline-block;
-      width: 28px; height: 1px;
-      background: var(--glow);
+    .scanlines{
+      position:fixed;
+      inset:0;
+      z-index:100;
+      pointer-events:none;
+      opacity:.018;
+      background:repeating-linear-gradient(
+        to bottom,
+        rgba(255,255,255,.9) 0,
+        rgba(255,255,255,.9) 1px,
+        transparent 1px,
+        transparent 4px
+      );
     }
 
-    h1 {
-      font-family: var(--serif);
-      font-size: clamp(2.8rem, 6vw, 4.4rem);
-      font-weight: 300;
-      line-height: 1.05;
-      color: #f0ebe4;
-      margin-bottom: 1rem;
-    }
-    h1 em {
-      font-style: italic;
-      color: var(--amber);
-    }
-
-    .hero-sub {
-      font-size: 11.5px;
-      color: var(--pale);
-      opacity: .65;
-      margin-bottom: 2.8rem;
-      max-width: 440px;
-      line-height: 1.9;
+    /* RAIL */
+    .rail{
+      position:fixed;
+      top:0;
+      left:0;
+      bottom:0;
+      z-index:40;
+      width:var(--rail);
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      padding:28px 24px;
+      border-right:1px solid var(--line);
+      background:rgba(2,2,2,.82);
+      backdrop-filter:blur(18px);
     }
 
-    .btn-row { display: flex; gap: 1rem; flex-wrap: wrap; }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: .6rem;
-      padding: .7rem 1.5rem;
-      font-family: var(--mono);
-      font-size: 10.5px;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      text-decoration: none;
-      border: 1px solid;
-      transition: background .2s, color .2s, box-shadow .2s;
-      cursor: none;
-    }
-    .btn-primary {
-      border-color: var(--glow);
-      color: var(--black);
-      background: var(--glow);
-    }
-    .btn-primary:hover {
-      background: var(--amber);
-      box-shadow: 0 0 24px rgba(224,122,48,.45);
-    }
-    .btn-ghost {
-      border-color: rgba(200,180,154,.25);
-      color: var(--pale);
-      background: transparent;
-    }
-    .btn-ghost:hover {
-      border-color: var(--glow);
-      color: var(--amber);
+    .rail-brand{
+      display:flex;
+      flex-direction:column;
+      gap:18px;
     }
 
-    /* ─── SECTION SHARED ────────────────────────────────── */
-    section {
-      padding: 7rem 0;
-    }
-    .sec-label {
-      font-size: 10px;
-      letter-spacing: .3em;
-      text-transform: uppercase;
-      color: var(--glow);
-      margin-bottom: 3rem;
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-    .sec-label::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: rgba(224,122,48,.18);
-      max-width: 200px;
-    }
-    h2 {
-      font-family: var(--serif);
-      font-weight: 300;
-      font-size: clamp(1.6rem, 3vw, 2.2rem);
-      color: #f0ebe4;
-      margin-bottom: 1.4rem;
+    .brand-line{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-family:var(--mono);
+      font-size:11px;
+      font-weight:600;
+      letter-spacing:.08em;
     }
 
-    /* ─── ABOUT ─────────────────────────────────────────── */
-    #about p {
-      opacity: .7;
-      max-width: 560px;
-      margin-bottom: 1rem;
-      line-height: 2;
-    }
-    .coords {
-      margin-top: 2.4rem;
-      display: flex;
-      gap: 3rem;
-    }
-    .coord-item { }
-    .coord-key {
-      font-size: 9px;
-      letter-spacing: .25em;
-      text-transform: uppercase;
-      color: var(--glow);
-      margin-bottom: .25rem;
-    }
-    .coord-val {
-      font-size: 12px;
-      color: #f0ebe4;
+    .brand-orbit{
+      position:relative;
+      width:28px;
+      height:28px;
+      border:1px solid rgba(255,151,71,.5);
+      border-radius:50%;
     }
 
-    /* ─── SKILLS ────────────────────────────────────────── */
-    .skill-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 1px;
-      background: rgba(224,122,48,.08);
-      border: 1px solid rgba(224,122,48,.08);
-    }
-    .skill-card {
-      background: var(--black);
-      padding: 1.6rem;
-      transition: background .2s;
-    }
-    .skill-card:hover { background: rgba(224,122,48,.04); }
-    .skill-icon {
-      font-size: 1.2rem;
-      margin-bottom: .8rem;
-      display: block;
-    }
-    .skill-name {
-      font-size: 11px;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-      color: #f0ebe4;
-      margin-bottom: .4rem;
-    }
-    .skill-desc {
-      font-size: 11px;
-      opacity: .45;
-      line-height: 1.7;
+    .brand-orbit::before{
+      content:"";
+      position:absolute;
+      left:50%;
+      top:50%;
+      width:19px;
+      height:6px;
+      transform:translate(-50%,-50%) rotate(-16deg);
+      border:1px solid var(--orange);
+      border-radius:50%;
+      box-shadow:0 0 12px rgba(255,151,71,.3);
     }
 
-    /* ─── WRITEUPS ──────────────────────────────────────── */
-    .writeup-list { display: flex; flex-direction: column; gap: 1px; }
-    .writeup-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      padding: 1.4rem 0;
-      border-bottom: 1px solid rgba(224,122,48,.08);
-      gap: 1.5rem;
-      transition: padding-left .2s;
-      cursor: none;
-    }
-    .writeup-item:hover { padding-left: .6rem; }
-    .writeup-meta { flex: 1; }
-    .writeup-title {
-      font-family: var(--serif);
-      font-size: 1rem;
-      color: #f0ebe4;
-      margin-bottom: .25rem;
-    }
-    .writeup-tags {
-      display: flex;
-      gap: .5rem;
-      flex-wrap: wrap;
-    }
-    .tag-pill {
-      font-size: 9px;
-      letter-spacing: .15em;
-      text-transform: uppercase;
-      padding: .15rem .55rem;
-      border: 1px solid rgba(224,122,48,.3);
-      color: var(--glow);
-    }
-    .writeup-right {
-      text-align: right;
-      flex-shrink: 0;
-    }
-    .writeup-diff {
-      font-size: 9.5px;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-      margin-bottom: .2rem;
-    }
-    .diff-easy   { color: #6fba8f; }
-    .diff-medium { color: var(--amber); }
-    .diff-hard   { color: #c0504a; }
-    .writeup-date { font-size: 10px; opacity: .4; }
-
-    /* ─── CONTACT ───────────────────────────────────────── */
-    #contact { border-top: 1px solid rgba(224,122,48,.1); }
-    .contact-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 4rem;
-      align-items: start;
-    }
-    @media (max-width: 600px) {
-      .contact-grid { grid-template-columns: 1fr; gap: 2rem; }
-      .coords { flex-wrap: wrap; gap: 1.5rem; }
-      nav { padding: 1.2rem 1.5rem; }
-    }
-    .contact-desc { opacity: .6; line-height: 2; margin-bottom: 1.8rem; }
-    .link-list { list-style: none; display: flex; flex-direction: column; gap: .8rem; }
-    .link-list a {
-      color: var(--pale);
-      text-decoration: none;
-      font-size: 11.5px;
-      opacity: .6;
-      display: flex;
-      align-items: center;
-      gap: .6rem;
-      transition: opacity .2s, color .2s;
-    }
-    .link-list a:hover { opacity: 1; color: var(--amber); }
-    .link-list a::before {
-      content: '→';
-      color: var(--glow);
-      font-size: 10px;
+    .brand-orbit::after{
+      content:"";
+      position:absolute;
+      left:50%;
+      top:50%;
+      width:8px;
+      height:8px;
+      transform:translate(-50%,-50%);
+      border-radius:50%;
+      background:#000;
+      box-shadow:0 0 0 1px rgba(255,197,122,.75);
     }
 
-    .terminal-box {
-      background: var(--deep);
-      border: 1px solid rgba(224,122,48,.15);
-      padding: 1.5rem;
-      font-size: 11px;
-    }
-    .t-line { margin-bottom: .3rem; }
-    .t-prompt { color: var(--glow); }
-    .t-comment { opacity: .35; }
-    .t-value { color: #a8d8b0; }
-    .t-blink {
-      display: inline-block;
-      width: 7px; height: 13px;
-      background: var(--amber);
-      vertical-align: middle;
-      animation: blink 1.1s step-end infinite;
-    }
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
-
-    /* ─── FOOTER ────────────────────────────────────────── */
-    footer {
-      padding: 2.5rem 0;
-      border-top: 1px solid rgba(224,122,48,.06);
-      text-align: center;
-      font-size: 10px;
-      letter-spacing: .15em;
-      opacity: .3;
+    .rail-code{
+      color:var(--muted2);
+      font-family:var(--mono);
+      font-size:8px;
+      line-height:1.7;
+      text-transform:uppercase;
+      letter-spacing:.08em;
     }
 
-    /* ─── SCROLL REVEAL ─────────────────────────────────── */
-    .reveal {
-      opacity: 0;
-      transform: translateY(22px);
-      transition: opacity .7s ease, transform .7s ease;
+    .rail-nav{
+      list-style:none;
+      display:grid;
+      gap:4px;
     }
-    .reveal.visible {
-      opacity: 1;
-      transform: translateY(0);
+
+    .rail-nav a{
+      position:relative;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      min-height:42px;
+      padding:0 10px 0 12px;
+      border-radius:8px;
+      color:#797980;
+      text-decoration:none;
+      font-family:var(--mono);
+      font-size:9px;
+      letter-spacing:.04em;
+      transition:.2s ease;
+    }
+
+    .rail-nav a::before{
+      content:"";
+      position:absolute;
+      left:0;
+      top:50%;
+      width:2px;
+      height:0;
+      background:var(--orange);
+      transform:translateY(-50%);
+      transition:.2s ease;
+    }
+
+    .rail-nav a:hover,
+    .rail-nav a.active{
+      color:#fff;
+      background:rgba(255,255,255,.03);
+    }
+
+    .rail-nav a:hover::before,
+    .rail-nav a.active::before{
+      height:18px;
+    }
+
+    .rail-status{
+      padding-top:18px;
+      border-top:1px solid var(--line);
+      font-family:var(--mono);
+    }
+
+    .status-row{
+      display:flex;
+      justify-content:space-between;
+      gap:14px;
+      color:var(--muted2);
+      font-size:8px;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+    }
+
+    .status-row + .status-row{margin-top:8px}
+    .status-row b{
+      color:#b9b5b0;
+      font-weight:500;
+    }
+
+    /* MAIN */
+    .main{
+      margin-left:var(--rail);
+    }
+
+    .viewport{
+      min-height:100svh;
+      position:relative;
+      overflow:hidden;
+      border-bottom:1px solid var(--line);
+    }
+
+    .hero-grid{
+      min-height:100svh;
+      display:grid;
+      grid-template-columns:minmax(340px,.72fr) minmax(520px,1.28fr);
+      align-items:center;
+      gap:20px;
+      width:min(1500px, calc(100% - 64px));
+      margin:0 auto;
+      padding:58px 0;
+    }
+
+    .hero-copy{
+      position:relative;
+      z-index:6;
+      align-self:end;
+      padding-bottom:72px;
+    }
+
+    .eyebrow{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      margin-bottom:22px;
+      color:var(--orange);
+      font-family:var(--mono);
+      font-size:9px;
+      letter-spacing:.16em;
+      text-transform:uppercase;
+    }
+
+    .eyebrow::before{
+      content:"";
+      width:34px;
+      height:1px;
+      background:var(--orange);
+    }
+
+    h1{
+      max-width:760px;
+      font-size:clamp(4rem,7.8vw,8.9rem);
+      line-height:.82;
+      letter-spacing:-.075em;
+      font-weight:600;
+    }
+
+    h1 span{
+      display:block;
+      color:transparent;
+      -webkit-text-stroke:1px rgba(255,197,122,.75);
+    }
+
+    .hero-copy p{
+      max-width:610px;
+      margin-top:28px;
+      color:#9b999f;
+      font-size:14px;
+      line-height:1.8;
+    }
+
+    .hero-copy strong{
+      color:#e6e2dd;
+      font-weight:500;
+    }
+
+    .hero-links{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:28px;
+    }
+
+    .link-btn{
+      min-height:42px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:0 14px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.018);
+      color:#aaa6ac;
+      text-decoration:none;
+      font-family:var(--mono);
+      font-size:9px;
+      letter-spacing:.04em;
+      transition:.2s ease;
+    }
+
+    .link-btn:hover{
+      color:#fff;
+      border-color:rgba(255,151,71,.28);
+      background:rgba(255,151,71,.04);
+    }
+
+    .link-btn.primary{
+      background:var(--orange);
+      border-color:var(--orange);
+      color:#120b07;
+      font-weight:600;
+    }
+
+    .link-btn.primary:hover{background:var(--amber)}
+
+    /* OBSERVATORY */
+    .observatory{
+      position:relative;
+      min-height:760px;
+      display:grid;
+      place-items:center;
+      overflow:visible;
+    }
+
+    .crosshair{
+      position:absolute;
+      inset:50% auto auto 50%;
+      width:min(48vw,660px);
+      aspect-ratio:1;
+      transform:translate(-50%,-50%);
+      border:1px solid rgba(255,255,255,.045);
+      border-radius:50%;
+    }
+
+    .crosshair::before,
+    .crosshair::after{
+      content:"";
+      position:absolute;
+      background:rgba(255,255,255,.045);
+    }
+
+    .crosshair::before{
+      left:50%;
+      top:-18%;
+      width:1px;
+      height:136%;
+    }
+
+    .crosshair::after{
+      top:50%;
+      left:-18%;
+      height:1px;
+      width:136%;
+    }
+
+    .crosshair .ticks{
+      position:absolute;
+      inset:5%;
+      border:1px dashed rgba(255,151,71,.08);
+      border-radius:50%;
+      animation:spin 42s linear infinite;
+    }
+
+    .crosshair .ticks::before,
+    .crosshair .ticks::after{
+      content:"";
+      position:absolute;
+      width:5px;
+      height:5px;
+      border-radius:50%;
+      background:var(--amber);
+      box-shadow:0 0 15px rgba(255,197,122,.65);
+    }
+
+    .crosshair .ticks::before{left:9%;top:30%}
+    .crosshair .ticks::after{right:12%;bottom:27%;opacity:.55}
+
+    .m87{
+      position:relative;
+      width:min(43vw,610px);
+      aspect-ratio:1;
+      border-radius:50%;
+      filter:drop-shadow(0 0 30px rgba(255,112,35,.08));
+    }
+
+    .m87-glow,
+    .m87-lens,
+    .m87-disk,
+    .m87-core,
+    .m87-shadow{
+      position:absolute;
+      left:50%;
+      top:50%;
+      transform:translate(-50%,-50%);
+      border-radius:50%;
+    }
+
+    .m87-glow{
+      width:118%;
+      height:118%;
+      background:
+        radial-gradient(circle,
+          rgba(255,135,50,.10) 0 11%,
+          rgba(195,63,20,.06) 25%,
+          rgba(98,31,15,.035) 41%,
+          transparent 67%);
+      filter:blur(24px);
+    }
+
+    .m87-lens{
+      width:72%;
+      height:72%;
+      border:1px solid rgba(255,190,112,.12);
+      box-shadow:
+        0 0 34px rgba(255,130,45,.11),
+        inset 0 0 38px rgba(255,130,45,.035);
+    }
+
+    .m87-disk{
+      width:118%;
+      height:27%;
+      border-radius:50%;
+      transform:translate(-50%,-50%) rotate(-12deg);
+      background:
+        radial-gradient(ellipse at center,
+          transparent 0 32%,
+          rgba(255,228,170,.96) 36%,
+          rgba(255,183,91,.95) 40%,
+          rgba(255,118,38,.84) 47%,
+          rgba(198,56,19,.44) 57%,
+          rgba(95,25,11,.14) 67%,
+          transparent 77%);
+      filter:blur(4px);
+      box-shadow:
+        0 0 42px rgba(255,122,38,.28),
+        0 0 105px rgba(178,52,17,.18);
+      z-index:2;
+    }
+
+    .m87-core{
+      width:78%;
+      height:15%;
+      border-radius:50%;
+      transform:translate(-50%,-50%) rotate(-12deg);
+      background:
+        radial-gradient(ellipse at center,
+          transparent 0 38%,
+          rgba(255,238,199,.96) 43%,
+          rgba(255,184,89,.92) 49%,
+          rgba(226,71,22,.42) 59%,
+          transparent 72%);
+      filter:blur(1.2px);
+      z-index:3;
+      mix-blend-mode:screen;
+    }
+
+    .m87-shadow{
+      width:30%;
+      height:30%;
+      background:#000;
+      z-index:5;
+      box-shadow:
+        0 0 0 1px rgba(255,211,154,.4),
+        0 0 17px rgba(255,172,86,.44),
+        0 0 52px rgba(255,117,38,.18);
+    }
+
+    .obs-label{
+      position:absolute;
+      padding:10px 12px;
+      background:rgba(2,2,2,.72);
+      border-left:1px solid rgba(255,151,71,.27);
+      backdrop-filter:blur(6px);
+      font-family:var(--mono);
+      font-size:8px;
+      color:#717178;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+    }
+
+    .obs-label b{
+      display:block;
+      margin-top:3px;
+      color:#b7b3ae;
+      font-weight:500;
+      text-transform:none;
+      letter-spacing:0;
+    }
+
+    .label-a{right:1%;top:21%}
+    .label-b{right:8%;bottom:17%}
+    .label-c{left:0;top:28%}
+
+    .hero-certbar{
+      position:absolute;
+      left:0;
+      right:0;
+      bottom:0;
+      z-index:7;
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      border-top:1px solid var(--line);
+      background:rgba(2,2,2,.78);
+      backdrop-filter:blur(10px);
+    }
+
+    .hero-cert{
+      min-height:74px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:0 18px;
+      border-right:1px solid var(--line);
+      font-family:var(--mono);
+    }
+
+    .hero-cert:last-child{border-right:0}
+    .hero-cert small{
+      color:var(--muted2);
+      font-size:7px;
+      text-transform:uppercase;
+      letter-spacing:.1em;
+    }
+
+    .hero-cert strong{
+      color:var(--amber);
+      font-size:12px;
+      font-weight:500;
+      letter-spacing:.04em;
+    }
+
+    /* SECTION FRAME */
+    .section{
+      position:relative;
+      padding:120px 0;
+      border-bottom:1px solid var(--line);
+    }
+
+    .section-inner{
+      width:min(1320px, calc(100% - 72px));
+      margin:0 auto;
+    }
+
+    .section-top{
+      display:grid;
+      grid-template-columns:160px minmax(0,1fr);
+      gap:46px;
+      margin-bottom:56px;
+    }
+
+    .section-code{
+      padding-top:8px;
+      color:var(--orange);
+      font-family:var(--mono);
+      font-size:8px;
+      letter-spacing:.15em;
+      text-transform:uppercase;
+    }
+
+    .section-title{
+      max-width:900px;
+      font-size:clamp(2.5rem,5vw,5.5rem);
+      line-height:.96;
+      letter-spacing:-.06em;
+      font-weight:600;
+    }
+
+    .section-lead{
+      max-width:720px;
+      margin-top:17px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.8;
+    }
+
+    /* ABOUT = DOSSIER */
+    .dossier{
+      display:grid;
+      grid-template-columns:1.25fr .75fr;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.01);
+    }
+
+    .dossier-copy{
+      min-height:330px;
+      padding:38px;
+      border-right:1px solid var(--line);
+    }
+
+    .dossier-copy p{
+      max-width:760px;
+      color:#96949a;
+      font-size:14px;
+      line-height:1.9;
+    }
+
+    .dossier-copy p+p{margin-top:18px}
+    .dossier-copy strong{color:#e7e2dc;font-weight:500}
+
+    .dossier-data{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+    }
+
+    .datum{
+      min-height:165px;
+      padding:24px;
+      border-right:1px solid var(--line);
+      border-bottom:1px solid var(--line);
+      background:rgba(4,4,5,.7);
+    }
+
+    .datum:nth-child(2n){border-right:0}
+    .datum:nth-last-child(-n+2){border-bottom:0}
+
+    .datum span{
+      color:var(--muted2);
+      font-family:var(--mono);
+      font-size:7px;
+      text-transform:uppercase;
+      letter-spacing:.1em;
+    }
+
+    .datum strong{
+      display:block;
+      margin-top:20px;
+      font-size:24px;
+      font-weight:500;
+      letter-spacing:-.03em;
+    }
+
+    .datum small{
+      display:block;
+      margin-top:5px;
+      color:#68686f;
+      font-family:var(--mono);
+      font-size:7px;
+      line-height:1.6;
+    }
+
+    /* FOCUS = SPECTRUM */
+    .spectrum{
+      display:grid;
+      grid-template-columns:repeat(6,1fr);
+      min-height:360px;
+      border-top:1px solid var(--line);
+      border-left:1px solid var(--line);
+    }
+
+    .band{
+      position:relative;
+      display:flex;
+      flex-direction:column;
+      justify-content:flex-end;
+      padding:24px 19px;
+      border-right:1px solid var(--line);
+      border-bottom:1px solid var(--line);
+      overflow:hidden;
+      transition:.25s ease;
+    }
+
+    .band::before{
+      content:"";
+      position:absolute;
+      left:0;
+      right:0;
+      bottom:0;
+      height:var(--level);
+      background:linear-gradient(
+        to top,
+        rgba(255,151,71,.12),
+        rgba(255,151,71,.02),
+        transparent
+      );
+      transition:.25s ease;
+    }
+
+    .band::after{
+      content:"";
+      position:absolute;
+      left:0;
+      right:0;
+      bottom:var(--level);
+      height:1px;
+      background:rgba(255,151,71,.35);
+      box-shadow:0 0 12px rgba(255,151,71,.2);
+      transition:.25s ease;
+    }
+
+    .band:hover{
+      background:rgba(255,151,71,.025);
+    }
+
+    .band:hover::before{height:calc(var(--level) + 7%)}
+    .band:hover::after{bottom:calc(var(--level) + 7%)}
+
+    .band code{
+      position:relative;
+      z-index:2;
+      color:var(--orange);
+      font-family:var(--mono);
+      font-size:8px;
+      letter-spacing:.08em;
+    }
+
+    .band h3{
+      position:relative;
+      z-index:2;
+      margin-top:8px;
+      font-size:15px;
+      font-weight:500;
+      letter-spacing:-.025em;
+    }
+
+    .band p{
+      position:relative;
+      z-index:2;
+      margin-top:7px;
+      color:#77767d;
+      font-size:11px;
+      line-height:1.6;
+    }
+
+    /* PROJECTS = MISSION LOG */
+    .project-toolbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:18px;
+      padding:0 0 15px;
+      border-bottom:1px solid var(--line);
+    }
+
+    .project-toolbar .count{
+      color:var(--muted2);
+      font-family:var(--mono);
+      font-size:8px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+    }
+
+    .filters{
+      display:flex;
+      flex-wrap:wrap;
+      gap:5px;
+    }
+
+    .filter{
+      min-height:28px;
+      padding:0 9px;
+      border:1px solid var(--line);
+      background:transparent;
+      color:#65656b;
+      font-family:var(--mono);
+      font-size:7px;
+      cursor:pointer;
+      transition:.2s ease;
+    }
+
+    .filter:hover,
+    .filter.active{
+      color:var(--amber);
+      border-color:rgba(255,151,71,.25);
+      background:rgba(255,151,71,.03);
+    }
+
+    .log{
+      display:flex;
+      flex-direction:column;
+    }
+
+    .entry{
+      display:grid;
+      grid-template-columns:58px 180px 1fr 95px;
+      gap:24px;
+      align-items:start;
+      min-height:104px;
+      padding:25px 0;
+      border-bottom:1px solid var(--line);
+      text-decoration:none;
+      transition:.2s ease;
+    }
+
+    .entry:hover{
+      padding-left:12px;
+      background:linear-gradient(90deg,rgba(255,151,71,.04),transparent 65%);
+    }
+
+    .entry-no{
+      color:#47474d;
+      font-family:var(--mono);
+      font-size:8px;
+    }
+
+    .entry-name strong{
+      display:block;
+      font-size:15px;
+      font-weight:500;
+      letter-spacing:-.025em;
+      word-break:break-word;
+    }
+
+    .entry-name small{
+      display:block;
+      margin-top:4px;
+      color:var(--orange);
+      font-family:var(--mono);
+      font-size:7px;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+
+    .entry-desc{
+      max-width:650px;
+      color:#77767c;
+      font-size:11px;
+      line-height:1.75;
+    }
+
+    .entry-open{
+      justify-self:end;
+      color:#55555b;
+      font-family:var(--mono);
+      font-size:7px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      transition:.2s ease;
+    }
+
+    .entry:hover .entry-open{color:var(--amber)}
+
+    /* CONTACT = TRANSMISSION */
+    .transmission{
+      display:grid;
+      grid-template-columns:1.15fr .85fr;
+      gap:0;
+      border:1px solid rgba(255,151,71,.17);
+      background:
+        radial-gradient(circle at 80% 30%, rgba(255,151,71,.07), transparent 18rem),
+        rgba(6,6,8,.72);
+    }
+
+    .trans-copy{
+      min-height:350px;
+      padding:40px;
+      border-right:1px solid var(--line);
+      display:flex;
+      flex-direction:column;
+      justify-content:flex-end;
+    }
+
+    .trans-copy .eyebrow{margin-bottom:18px}
+
+    .trans-copy h2{
+      max-width:740px;
+      font-size:clamp(2.9rem,5.2vw,5.7rem);
+      line-height:.94;
+      letter-spacing:-.06em;
+      font-weight:600;
+    }
+
+    .trans-copy p{
+      max-width:620px;
+      margin-top:16px;
+      color:#8a898f;
+      font-size:12px;
+      line-height:1.8;
+    }
+
+    .trans-links{
+      display:grid;
+      grid-template-rows:repeat(4,1fr);
+    }
+
+    .trans-links a{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      padding:0 22px;
+      border-bottom:1px solid var(--line);
+      color:#959399;
+      text-decoration:none;
+      font-family:var(--mono);
+      font-size:9px;
+      transition:.2s ease;
+    }
+
+    .trans-links a:last-child{border-bottom:0}
+
+    .trans-links a:hover{
+      color:var(--amber);
+      background:rgba(255,151,71,.035);
+      padding-left:28px;
+    }
+
+    footer{
+      padding:23px 36px 34px;
+      color:#48484e;
+      font-family:var(--mono);
+      font-size:7px;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      display:flex;
+      justify-content:space-between;
+      gap:20px;
+    }
+
+    .reveal{
+      opacity:0;
+      transform:translateY(14px);
+      transition:opacity .65s ease,transform .65s ease;
+    }
+
+    .reveal.visible{
+      opacity:1;
+      transform:none;
+    }
+
+    @keyframes spin{
+      to{transform:rotate(360deg)}
+    }
+
+    @media(max-width:1180px){
+      :root{--rail:190px}
+
+      .hero-grid{
+        grid-template-columns:1fr;
+        padding-top:100px;
+      }
+
+      .hero-copy{
+        align-self:auto;
+        padding-bottom:0;
+      }
+
+      .observatory{
+        min-height:620px;
+        margin-top:-20px;
+      }
+
+      .m87{
+        width:min(67vw,570px);
+      }
+
+      .crosshair{
+        width:min(70vw,630px);
+      }
+
+      .hero-certbar{
+        position:relative;
+        margin-top:10px;
+      }
+
+      .viewport{
+        padding-bottom:0;
+      }
+
+      .spectrum{
+        grid-template-columns:repeat(3,1fr);
+      }
+    }
+
+    @media(max-width:900px){
+      :root{--rail:0px}
+
+      .rail{
+        position:fixed;
+        left:12px;
+        right:12px;
+        top:10px;
+        bottom:auto;
+        width:auto;
+        min-height:56px;
+        padding:0 14px;
+        flex-direction:row;
+        align-items:center;
+        border:1px solid var(--line);
+        border-radius:12px;
+      }
+
+      .rail-code,
+      .rail-status{display:none}
+
+      .rail-brand{
+        display:block;
+      }
+
+      .rail-nav{
+        display:flex;
+      }
+
+      .rail-nav li:not(:last-child){display:none}
+
+      .rail-nav a{
+        min-height:34px;
+      }
+
+      .main{margin-left:0}
+
+      .hero-grid{
+        width:min(100% - 30px, 900px);
+      }
+
+      .section-inner{
+        width:min(100% - 30px, 900px);
+      }
+
+      .section-top{
+        grid-template-columns:1fr;
+        gap:12px;
+      }
+
+      .dossier,
+      .transmission{
+        grid-template-columns:1fr;
+      }
+
+      .dossier-copy,
+      .trans-copy{
+        border-right:0;
+        border-bottom:1px solid var(--line);
+      }
+
+      .trans-links a{
+        min-height:65px;
+      }
+    }
+
+    @media(max-width:700px){
+      h1{
+        font-size:clamp(3.8rem,19vw,6.4rem);
+      }
+
+      .observatory{
+        min-height:460px;
+      }
+
+      .m87{
+        width:min(88vw,410px);
+      }
+
+      .crosshair{
+        width:min(94vw,440px);
+      }
+
+      .label-a,.label-b,.label-c{display:none}
+
+      .hero-certbar{
+        grid-template-columns:1fr 1fr;
+      }
+
+      .hero-cert{
+        min-height:66px;
+      }
+
+      .hero-cert:nth-child(2){
+        border-right:0;
+      }
+
+      .hero-cert:nth-child(-n+2){
+        border-bottom:1px solid var(--line);
+      }
+
+      .section{
+        padding:86px 0;
+      }
+
+      .section-title{
+        font-size:clamp(2.4rem,11vw,4.4rem);
+      }
+
+      .dossier-data{
+        grid-template-columns:1fr;
+      }
+
+      .datum{
+        border-right:0!important;
+        border-bottom:1px solid var(--line)!important;
+      }
+
+      .datum:last-child{border-bottom:0!important}
+
+      .spectrum{
+        grid-template-columns:1fr;
+      }
+
+      .band{
+        min-height:190px;
+      }
+
+      .project-toolbar{
+        align-items:flex-start;
+        flex-direction:column;
+      }
+
+      .entry{
+        grid-template-columns:35px 1fr auto;
+        gap:12px;
+      }
+
+      .entry-desc{
+        grid-column:2/4;
+        margin-top:-4px;
+      }
+
+      .entry-open{
+        align-self:start;
+      }
+
+      .trans-copy{
+        min-height:300px;
+        padding:28px 22px;
+      }
+
+      footer{
+        padding-left:15px;
+        padding-right:15px;
+        flex-direction:column;
+      }
+    }
+
+    @media(prefers-reduced-motion:reduce){
+      html{scroll-behavior:auto}
+      *,*::before,*::after{
+        animation-duration:.01ms!important;
+        animation-iteration-count:1!important;
+        transition-duration:.01ms!important;
+      }
+      .reveal{opacity:1;transform:none}
     }
   </style>
 </head>
 <body>
+  <div class="space" aria-hidden="true"></div>
+  <div class="scanlines" aria-hidden="true"></div>
 
-<!-- CURSOR -->
-<div id="cursor"></div>
-<div id="cursor-ring"></div>
-
-<!-- CANVAS -->
-<canvas id="cosmos"></canvas>
-
-<!-- NAV -->
-<nav>
-  <span class="nav-logo">M87*</span>
-  <ul class="nav-links">
-    <li><a href="#about">about</a></li>
-    <li><a href="#skills">skills</a></li>
-    <li><a href="#writeups">writeups</a></li>
-    <li><a href="#contact">contact</a></li>
-  </ul>
-</nav>
-
-<!-- HERO -->
-<div class="wrap">
-  <section id="hero">
-    <div class="hero-inner">
-      <div class="tag">Security Researcher</div>
-      <h1>Beyond the<br /><em>event horizon.</em></h1>
-      <p class="hero-sub">
-        I explore systems from their very core. Every vulnerability is a unique feature
-        waiting to be understood — not exploited without purpose.
-      </p>
-      <div class="btn-row">
-        <a href="https://ravlito.gitbook.io/ravlito-docs" class="btn btn-primary">Wiki</a>
-        <a href="#contact" class="btn btn-ghost">Contact</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- ABOUT -->
-  <section id="about" class="reveal">
-    <div class="sec-label">01 — About</div>
-    <h2>The crowd surges forward.<br />The information remains.</h2>
-    <p>
-      Self-taught hacker. Specialising in web penetration testing,
-      reverse engineering and binary exploitation. I believe that
-      understanding how something breaks is the only real way to build it properly.
-    </p>
-    <p>
-      Like M87* — 6.5 billion solar masses in a single point —
-      I am interested in concentrating knowledge until it reveals something new.
-    </p>
-    <div class="coords">
-      <div class="coord-item">
-        <div class="coord-key">position</div>
-        <div class="coord-val">Virgo A · 55 Mly</div>
-      </div>
-      <div class="coord-item">
-        <div class="coord-key">Certifications</div>
-        <div class="coord-val">CRTA | API-RTA | WEB-RTA | CWES (Coming) | EWPTxv3 (Coming)</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- SKILLS -->
-  <section id="skills" class="reveal">
-    <div class="sec-label">02 — Skills</div>
-    <h2>Summary<br />Skills</h2>
-    <div class="skill-grid">
-      <div class="skill-card">
-        <span class="skill-icon">⬡</span>
-        <div class="skill-name">Web Pentesting</div>
-        <div class="skill-desc">OWASP Top 10, SQLi, XSS, SSRF, IDOR, deserialization.</div>
-      </div>
-      <div class="skill-card">
-        <span class="skill-icon">◈</span>
-        <div class="skill-name">Mobile Pentesting</div>
-        <div class="skill-desc">Deeplinks, SSL Pinning, Frida.</div>
-      </div>
-      <div class="skill-card">
-        <span class="skill-icon">◎</span>
-        <div class="skill-name">OSINT</div>
-        <div class="skill-desc">Building my own Intelx.</div>
-      </div>
-      <div class="skill-card">
-        <span class="skill-icon">▣</span>
-        <div class="skill-name">Binary Exploitation</div>
-        <div class="skill-desc">Buffer overflows, ROP chains.</div>
-      </div>
-      <div class="skill-card">
-        <span class="skill-icon">◐</span>
-        <div class="skill-name">Scripting</div>
-        <div class="skill-desc">Python, Bash, C++, C#, Rust.</div>
-      </div>
-      <div class="skill-card">
-        <span class="skill-icon">⊕</span>
-        <div class="skill-name">AD</div>
-        <div class="skill-desc">Windows Enthusiast.</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- WRITEUPS -->
-  <section id="writeups" class="reveal">
-    <div class="sec-label">03 — Writeups</div>
-    <h2>Docs:</h2>
-    <div class="writeup-list">
-
-      <a href="https://github.com/r4vl1t0/CVE-2019-0232" target="_blank" style="text-decoration:none; color:inherit; display:block;">
-        <div class="writeup-item">
-          <div class="writeup-meta">
-            <div class="writeup-title">CVE-2019-0232 — Apache Tomcat 9.0.0.M1</div>
-            <div class="writeup-tags">
-              <span class="tag-pill">rce</span>
-              <span class="tag-pill">cgi</span>
-              <span class="tag-pill">tomcat</span>
-            </div>
-          </div>
-          <div class="writeup-right">
-            <div class="writeup-diff diff-hard">Critical</div>
-            <div class="writeup-date">github ↗</div>
-          </div>
-        </div>
+  <aside class="rail">
+    <div class="rail-brand">
+      <a href="#top" class="brand-line" style="text-decoration:none">
+        <span class="brand-orbit" aria-hidden="true"></span>
+        <span>r4vl1t0 / M87</span>
       </a>
 
-      <a href="https://github.com/r4vl1t0/gitlab_user_enum" target="_blank" style="text-decoration:none; color:inherit; display:block;">
-        <div class="writeup-item">
-          <div class="writeup-meta">
-            <div class="writeup-title">GitLab User Enumeration</div>
-            <div class="writeup-tags">
-              <span class="tag-pill">osint</span>
-              <span class="tag-pill">recon</span>
-              <span class="tag-pill">gitlab</span>
-            </div>
-          </div>
-          <div class="writeup-right">
-            <div class="writeup-diff diff-medium">Medium</div>
-            <div class="writeup-date">github ↗</div>
-          </div>
-        </div>
-      </a>
-
-      <a href="https://github.com/r4vl1t0/smb_fast_spray.py" target="_blank" style="text-decoration:none; color:inherit; display:block;">
-        <div class="writeup-item">
-          <div class="writeup-meta">
-            <div class="writeup-title">SMB Fast Spray</div>
-            <div class="writeup-tags">
-              <span class="tag-pill">smb</span>
-              <span class="tag-pill">spray</span>
-              <span class="tag-pill">ad</span>
-            </div>
-          </div>
-          <div class="writeup-right">
-            <div class="writeup-diff diff-medium">Tool</div>
-            <div class="writeup-date">github ↗</div>
-          </div>
-        </div>
-      </a>
-
-    </div>
-  </section>
-
-  <!-- CONTACT -->
-  <section id="contact" class="reveal">
-    <div class="sec-label">04 — Contact</div>
-    <div class="contact-grid">
-      <div>
-        <h2>Selective<br />gravitation.</h2>
-        <p class="contact-desc">
-          I only attract what's interesting: collaborations, team CTFs,
-          bug bounties or research projects.
-        </p>
-        <ul class="link-list">
-          <li><a href="https://github.com/r4vl1t0" target="_blank">GitHub</a></li>
-          <li><a href="https://ravlito.gitbook.io/ravlito-docs/" target="_blank">GitBook</a></li>
-          <li><a href="https://app.hackthebox.com/public/users/2007919" target="_blank">HackTheBox</a></li>
-          <li><a href="mailto:raulitoscontacto@gmail.com">raulitoscontacto@gmail.com</a></li>
-        </ul>
-      </div>
-      <div class="terminal-box">
-        <div class="t-line"><span class="t-comment"># whois m87hacker</span></div>
-        <div class="t-line"><span class="t-prompt">handle    </span><span class="t-value">m87hacker</span></div>
-        <div class="t-line"><span class="t-prompt">location  </span><span class="t-value">Virgo Supercluster</span></div>
-        <div class="t-line"><span class="t-prompt">pgp       </span><span class="t-value">0xDEAD·BEEF</span></div>
-        <div class="t-line"><span class="t-prompt">status    </span><span class="t-value">online</span></div>
-        <div class="t-line">&nbsp;</div>
-        <div class="t-line"><span class="t-comment"># last seen</span></div>
-        <div class="t-line"><span class="t-prompt">$ </span>_<span class="t-blink"></span></div>
+      <div class="rail-code">
+        Observatory node 01<br>
+        Offensive security<br>
+        Lima / PE / UTC-5
       </div>
     </div>
-  </section>
-</div>
 
-<footer>
-  <div class="wrap">
-    M87* · 6.5×10⁹ M☉ · First imaged 2019 · EHT Collaboration
+    <ul class="rail-nav">
+      <li><a href="#top" class="active"><span>00</span><span>origin</span></a></li>
+      <li><a href="#about"><span>01</span><span>profile</span></a></li>
+      <li><a href="#focus"><span>02</span><span>spectrum</span></a></li>
+      <li><a href="#projects"><span>03</span><span>mission log</span></a></li>
+      <li><a href="#contact"><span>04</span><span>transmit</span></a></li>
+      <li><a href="https://github.com/r4vl1t0" target="_blank" rel="noreferrer"><span>EXT</span><span>github</span></a></li>
+    </ul>
+
+    <div class="rail-status">
+      <div class="status-row"><span>signal</span><b>locked</b></div>
+      <div class="status-row"><span>catalog</span><b>M87*</b></div>
+      <div class="status-row"><span>status</span><b>online</b></div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <main id="top">
+      <section class="viewport">
+        <div class="hero-grid">
+          <div class="hero-copy reveal">
+            <div class="eyebrow">M87 observatory / offensive security</div>
+
+            <h1>
+              Find the
+              <span>event horizon.</span>
+            </h1>
+
+            <p>
+              I am <strong>r4vl1t0</strong>, a security researcher focused on
+              <strong>web applications, APIs, Active Directory, reconnaissance and offensive tooling</strong>.
+              I build utilities, break labs, document findings and automate the repetitive parts.
+            </p>
+
+            <div class="hero-links">
+              <a class="link-btn primary" href="#projects">Mission log</a>
+              <a class="link-btn" href="https://ravlito.gitbook.io/ravlito-docs/" target="_blank" rel="noreferrer">GitBook</a>
+              <a class="link-btn" href="https://app.hackthebox.com/public/users/2007919" target="_blank" rel="noreferrer">Hack The Box</a>
+            </div>
+          </div>
+
+          <div class="observatory reveal">
+            <div class="crosshair">
+              <div class="ticks"></div>
+            </div>
+
+            <div class="m87" aria-hidden="true">
+              <div class="m87-glow"></div>
+              <div class="m87-lens"></div>
+              <div class="m87-disk"></div>
+              <div class="m87-core"></div>
+              <div class="m87-shadow"></div>
+            </div>
+
+            <div class="obs-label label-a">
+              target
+              <b>M87* / Virgo A</b>
+            </div>
+
+            <div class="obs-label label-b">
+              mass
+              <b>6.5 × 10^9 M☉</b>
+            </div>
+
+            <div class="obs-label label-c">
+              distance
+              <b>~55 Mly</b>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-certbar">
+          <div class="hero-cert"><small>cert 01</small><strong>CRTA</strong></div>
+          <div class="hero-cert"><small>cert 02</small><strong>API-RTA</strong></div>
+          <div class="hero-cert"><small>cert 03</small><strong>WEB-RTA</strong></div>
+          <div class="hero-cert"><small>cert 04</small><strong>CPTS</strong></div>
+        </div>
+      </section>
+
+      <section class="section" id="about">
+        <div class="section-inner">
+          <div class="section-top reveal">
+            <div class="section-code">01 / profile dossier</div>
+            <div>
+              <h2 class="section-title">What sits behind the signal.</h2>
+              <p class="section-lead">
+                Practical offensive security, with a preference for understanding the system before automating around it.
+              </p>
+            </div>
+          </div>
+
+          <div class="dossier reveal">
+            <div class="dossier-copy">
+              <p>
+                My public work is centered on <strong>security tooling, enumeration scripts, proof-of-concepts, vulnerable labs and CTF writeups</strong>.
+                When a workflow becomes repetitive, I usually turn it into a small tool.
+              </p>
+
+              <p>
+                My main interests are web and API security, Windows and Active Directory environments, recon workflows and application behavior that creates unexpected attack paths.
+              </p>
+            </div>
+
+            <div class="dossier-data">
+              <div class="datum">
+                <span>certifications</span>
+                <strong>04</strong>
+                <small>CRTA / API-RTA / WEB-RTA / CPTS</small>
+              </div>
+              <div class="datum">
+                <span>repositories</span>
+                <strong>14+</strong>
+                <small>public projects</small>
+              </div>
+              <div class="datum">
+                <span>primary tools</span>
+                <strong>Py / Sh</strong>
+                <small>plus Rust / PHP / JS</small>
+              </div>
+              <div class="datum">
+                <span>base</span>
+                <strong>Lima</strong>
+                <small>Peru / UTC-5</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="focus">
+        <div class="section-inner">
+          <div class="section-top reveal">
+            <div class="section-code">02 / attack spectrum</div>
+            <div>
+              <h2 class="section-title">Six bands. One attack surface.</h2>
+              <p class="section-lead">
+                The areas with the strongest pull in my current work and study.
+              </p>
+            </div>
+          </div>
+
+          <div class="spectrum reveal">
+            <article class="band" style="--level:78%">
+              <code>WEB</code>
+              <h3>Web Security</h3>
+              <p>Authorization, auth flows, injection, SSRF, IDOR and application logic.</p>
+            </article>
+            <article class="band" style="--level:84%">
+              <code>API</code>
+              <h3>API Security</h3>
+              <p>Endpoint discovery, BOLA/BFLA, tokens and object-level authorization.</p>
+            </article>
+            <article class="band" style="--level:72%">
+              <code>AD</code>
+              <h3>Active Directory</h3>
+              <p>Enumeration, SMB workflows, credentials and Windows attack paths.</p>
+            </article>
+            <article class="band" style="--level:88%">
+              <code>RECON</code>
+              <h3>Recon</h3>
+              <p>Discovery, enumeration and automation for repeatable workflows.</p>
+            </article>
+            <article class="band" style="--level:68%">
+              <code>LABS</code>
+              <h3>CTF & Labs</h3>
+              <p>Writeups, vulnerable targets and hands-on technical practice.</p>
+            </article>
+            <article class="band" style="--level:82%">
+              <code>BUILD</code>
+              <h3>Tooling</h3>
+              <p>Python, Bash, Rust, PHP and JavaScript utilities.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="projects">
+        <div class="section-inner">
+          <div class="section-top reveal">
+            <div class="section-code">03 / mission log</div>
+            <div>
+              <h2 class="section-title">Recorded objects in orbit.</h2>
+              <p class="section-lead">
+                Public repositories and experiments, presented as a mission log instead of a traditional portfolio grid.
+              </p>
+            </div>
+          </div>
+
+          <div class="project-toolbar reveal">
+            <div class="count"><span id="count">14</span> objects visible</div>
+
+            <div class="filters">
+              <button class="filter active" type="button" data-filter="all">all</button>
+              <button class="filter" type="button" data-filter="python">python</button>
+              <button class="filter" type="button" data-filter="shell">shell</button>
+              <button class="filter" type="button" data-filter="web">web</button>
+              <button class="filter" type="button" data-filter="rust">rust</button>
+            </div>
+          </div>
+
+          <div class="log reveal">
+            <a class="entry" data-category="web" href="https://github.com/r4vl1t0/Auth-Repeater" target="_blank" rel="noreferrer">
+              <div class="entry-no">OBJ-01</div>
+              <div class="entry-name"><strong>Auth-Repeater</strong><small>Burp / Web</small></div>
+              <div class="entry-desc">Burp Suite Free extension for authorization testing and access-control review.</div>
+              <div class="entry-open">open repo</div>
+            </a>
+
+            <a class="entry" data-category="web" href="https://github.com/r4vl1t0/CTF-s" target="_blank" rel="noreferrer">
+              <div class="entry-no">OBJ-02</div>
+              <div class="entry-name"><strong>CTF-s</strong><small>Writeups</small></div>
+              <div class="entry-desc">CTF notes and writeups from practical security challenges.</div>
+              <div class="entry-open">open repo</div>
+            </a>
+
+            <a class="entry" data-category="python" href="https://github.com/r4vl1t0/CVE-2019-0232" target="_blank" rel="noreferrer">
+              <div class="entry-no">OBJ-03</div>
+              <div class="entry-name"><strong>CVE-2019-0232</strong><small>Python</small></div>
+              <div class="entry-desc">Exploit implementation based on public research around Apache Tomcat CGI on Windows.</div>
+              <div class="entry-open">open repo</div>
+            </a>
+
+            <a class="entry" data-category="python" href="https://github.com/r4vl1t0/gitlab_user_enum" target="_blank" rel="noreferrer">
+              <div class="entry-no">OBJ-04</div>
+              <div class="entry-name"><strong>gitlab_user_enum</strong><small>Python</small></div>
+              <div class="entry-desc">GitLab user enumeration script for recon workflows.</div>
+              <div class="entry-open">open repo</div>
+            </a>
+
+            <a class="entry" data-category="shell" href="https://github.com/r4vl1t0/HTBAutoRecon" target="_blank" rel="noreferrer">
+              <div class="entry-no">OBJ-05</div>
+              <div class="entry-name"><strong>HTBAutoRecon</strong><small>Shell</small></div>
+              <div class="entry-desc">Bash automation for the reconnaissance phase of HTB-style targets.</div>
+              <div class="entry-open">open repo</div>
+            </a>
+
+            <a class="entry" data-category="shell" href="https://github.com/r4vl1t0/jwtbreaker.sh" target="_blank" rel="noreferrer">
+              <div class="entry-no">OBJ-06</div>
+              <div class="entry-name"><strong>jwtbreaker.sh</strong><small>Shell</small></div>
+              <div class="entry-desc">Helper for repetitive JWT cracking workflows using Hashcat.</div>
+              <div class="entry-open">open repo</div>
+            </a>
+
+            <a class="entry" data-category="web" href="https://github.com/r4vl1t0/labs" target="_blank" rel="noreferrer">
+              <div class="entry-no">OBJ-07</div>
+              <div class="entry-name"><strong>labs</strong><small>PHP</small></div>
+              <div class="entry-desc">Security labs and intentionally vulnerable experiments for practice.</div>
+              <div class="entry-open">open repo</div>
+            </a>
+
+            <a class="entry" data-category="web" href="https://github.com/r4vl1t0/obsidian-auto-format-json" target="_blank" rel="noreferrer">
+              <div class="entry-no">OBJ-08</div>
+              <div class="entry-name"><strong>obsidian-auto-format-json</strong><small>JavaScript</small></div>
+              <div class="entry-desc">Utility for automatically formatting JSON in an Obsidian workflow.</div>
+              <div class="entry-open">open repo</div>
+            </a>
+
+            <a class="entry" data-category="web" href="https://github.com/r4vl1t0/php_reverse_shell" target="_blank" rel="noreferrer">
+              <div class="entry-no">OBJ-09</div>
+              <div class="entry-name"><strong>php_reverse_shell</strong><small>PHP</small></div>
+              <div class="entry-desc">PHP reverse shell for controlled labs and offensive-security practice.</div>
+              <div class="entry-open">open repo</div>
+            </a>
+
+            <a class="entry" data-category="rust" href="https://github.com/r4vl1t0/rust-network-scanner" target="_blank" rel="noreferrer">
+              <div class="entry-no">OBJ-10</div>
+              <div class="entry-name"><strong>rust-network-scanner</strong><small>Rust</small></div>
+              <div class="entry-desc">Network scanner written in Rust for Windows-oriented workflows.</div>
+              <div class="entry-open">open repo</div>
+            </a>
+
+            <a class="entry" data-category="web" href="https://github.com/r4vl1t0/Simple-.cap-WiFi-Analyzer" target="_blank" rel="noreferrer">
+              <div class="entry-no">OBJ-11</div>
+              <div class="entry-name"><strong>Simple .cap WiFi Analyzer</strong><small>HTML</small></div>
+              <div class="entry-desc">Simple analyzer for wireless capture files produced with airodump-ng.</div>
+              <div class="entry-open">open repo</div>
+            </a>
+
+            <a class="entry" data-category="python" href="https://github.com/r4vl1t0/smb_fast_spray.py" target="_blank" rel="noreferrer">
+              <div class="entry-no">OBJ-12</div>
+              <div class="entry-name"><strong>smb_fast_spray.py</strong><small>Python</small></div>
+              <div class="entry-desc">Fast SMB spraying experiment for controlled Active Directory environments.</div>
+              <div class="entry-open">open repo</div>
+            </a>
+
+            <a class="entry" data-category="python" href="https://github.com/r4vl1t0/tomcat_mgr_enumerate" target="_blank" rel="noreferrer">
+              <div class="entry-no">OBJ-13</div>
+              <div class="entry-name"><strong>tomcat_mgr_enumerate</strong><small>Python</small></div>
+              <div class="entry-desc">Tomcat Manager credential testing scripts with progress feedback.</div>
+              <div class="entry-open">open repo</div>
+            </a>
+
+            <a class="entry" data-category="web" href="https://github.com/r4vl1t0/r4vl1t0.github.io" target="_blank" rel="noreferrer">
+              <div class="entry-no">OBJ-14</div>
+              <div class="entry-name"><strong>r4vl1t0.github.io</strong><small>HTML</small></div>
+              <div class="entry-desc">Source repository for this M87 observatory-style portfolio.</div>
+              <div class="entry-open">open repo</div>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="contact">
+        <div class="section-inner">
+          <div class="section-top reveal">
+            <div class="section-code">04 / transmission</div>
+            <div>
+              <h2 class="section-title">Open a channel.</h2>
+            </div>
+          </div>
+
+          <div class="transmission reveal">
+            <div class="trans-copy">
+              <div class="eyebrow">signal channel / external comms</div>
+              <h2>Interesting work gets through.</h2>
+              <p>
+                Security research, CTFs, tooling, technical collaboration and conversations around offensive security.
+              </p>
+            </div>
+
+            <div class="trans-links">
+              <a href="https://github.com/r4vl1t0" target="_blank" rel="noreferrer"><span>GitHub</span><span>open</span></a>
+              <a href="https://ravlito.gitbook.io/ravlito-docs/" target="_blank" rel="noreferrer"><span>GitBook</span><span>open</span></a>
+              <a href="https://app.hackthebox.com/public/users/2007919" target="_blank" rel="noreferrer"><span>Hack The Box</span><span>open</span></a>
+              <a href="mailto:raulitoscontacto@gmail.com"><span>Email</span><span>send</span></a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>r4vl1t0 / M87 observatory</span>
+      <span>offensive security / signal over noise</span>
+    </footer>
   </div>
-</footer>
 
-<script>
-  /* ─── CURSOR ──────────────────────────────────────────── */
-  const cur = document.getElementById('cursor');
-  const ring = document.getElementById('cursor-ring');
-  let mx=0, my=0, rx=0, ry=0;
-  document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; });
-  function animCursor() {
-    cur.style.left = mx+'px'; cur.style.top = my+'px';
-    rx += (mx-rx)*.12; ry += (my-ry)*.12;
-    ring.style.left = rx+'px'; ring.style.top = ry+'px';
-    requestAnimationFrame(animCursor);
-  }
-  animCursor();
+  <script>
+    (() => {
+      const reveals = document.querySelectorAll(".reveal");
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if(entry.isIntersecting){
+            entry.target.classList.add("visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold:.1 });
 
-  /* ─── CANVAS — STARS + BLACK HOLE GLOW ───────────────── */
-  const canvas = document.getElementById('cosmos');
-  const ctx    = canvas.getContext('2d');
-  let W, H;
+      reveals.forEach(el => observer.observe(el));
+    })();
 
-  function resize() { W = canvas.width = innerWidth; H = canvas.height = innerHeight; buildStars(); }
+    (() => {
+      const buttons = [...document.querySelectorAll(".filter")];
+      const entries = [...document.querySelectorAll(".entry")];
+      const count = document.getElementById("count");
 
-  const STAR_COUNT = 260;
-  let stars = [];
-  function buildStars() {
-    stars = [];
-    for (let i=0; i<STAR_COUNT; i++) {
-      stars.push({
-        x: Math.random()*W, y: Math.random()*H,
-        r: Math.random()*1.1+.2,
-        a: Math.random(),
-        da: (Math.random()-.5)*.004,
-        speed: Math.random()*.15+.05,
+      buttons.forEach(button => {
+        button.addEventListener("click", () => {
+          const filter = button.dataset.filter;
+
+          buttons.forEach(btn => btn.classList.remove("active"));
+          button.classList.add("active");
+
+          let visible = 0;
+          entries.forEach(entry => {
+            const show = filter === "all" || entry.dataset.category === filter;
+            entry.style.display = show ? "grid" : "none";
+            if(show) visible++;
+          });
+
+          count.textContent = visible;
+        });
       });
-    }
-  }
+    })();
 
-  const BH_XR = .72, BH_YR = .38;
+    (() => {
+      const sections = [...document.querySelectorAll("main section[id]")];
+      const links = [...document.querySelectorAll(".rail-nav a[href^='#']")];
 
-  function draw(t) {
-    ctx.clearRect(0,0,W,H);
+      const activate = () => {
+        let current = "top";
+        const y = window.scrollY + window.innerHeight * .34;
 
-    const bx = W*BH_XR, by = H*BH_YR;
+        sections.forEach(section => {
+          if(section.offsetTop <= y) current = section.id;
+        });
 
-    const bg = ctx.createRadialGradient(bx,by,0, bx,by,H*.85);
-    bg.addColorStop(0, 'rgba(14,8,4,.9)');
-    bg.addColorStop(.35,'rgba(5,4,8,.8)');
-    bg.addColorStop(1,  'rgba(2,3,5,0)');
-    ctx.fillStyle = bg;
-    ctx.fillRect(0,0,W,H);
+        links.forEach(link => {
+          link.classList.toggle("active", link.getAttribute("href") === "#" + current);
+        });
+      };
 
-    const diskOuter = ctx.createRadialGradient(bx,by,0, bx,by,H*.38);
-    diskOuter.addColorStop(0,   'rgba(230,120,40,.0)');
-    diskOuter.addColorStop(.18, 'rgba(200,80,20,.18)');
-    diskOuter.addColorStop(.32, 'rgba(160,60,10,.08)');
-    diskOuter.addColorStop(1,   'rgba(0,0,0,0)');
-    ctx.fillStyle = diskOuter;
-    ctx.fillRect(0,0,W,H);
-
-    for (let layer=0; layer<3; layer++) {
-      const rx2 = H*(0.07+layer*.04);
-      const ry2 = rx2*.3;
-      ctx.save();
-      ctx.translate(bx, by);
-      ctx.rotate(.12 + layer*.07);
-      const grad = ctx.createRadialGradient(0,0,0, 0,0,rx2);
-      const alpha = [.55,.35,.18][layer];
-      grad.addColorStop(0,   `rgba(0,0,0,0)`);
-      grad.addColorStop(.7,  `rgba(220,100,30,${alpha})`);
-      grad.addColorStop(.85, `rgba(240,160,60,${alpha*.7})`);
-      grad.addColorStop(1,   `rgba(0,0,0,0)`);
-      ctx.beginPath();
-      ctx.ellipse(0,0, rx2, ry2, 0,0,Math.PI*2);
-      ctx.fillStyle = grad;
-      ctx.fill();
-      ctx.restore();
-    }
-
-    const shadow = ctx.createRadialGradient(bx,by,0, bx,by,H*.055);
-    shadow.addColorStop(0,   'rgba(2,3,5,1)');
-    shadow.addColorStop(.75, 'rgba(2,3,5,.95)');
-    shadow.addColorStop(1,   'rgba(2,3,5,0)');
-    ctx.fillStyle = shadow;
-    ctx.beginPath();
-    ctx.arc(bx,by, H*.055, 0, Math.PI*2);
-    ctx.fill();
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(bx,by, H*.056, 0, Math.PI*2);
-    ctx.strokeStyle = `rgba(240,160,60,.55)`;
-    ctx.lineWidth = 1.2;
-    ctx.shadowColor = '#e07a30';
-    ctx.shadowBlur = 12;
-    ctx.stroke();
-    ctx.restore();
-
-    for (const s of stars) {
-      s.a += s.da;
-      if (s.a<=0||s.a>=1) s.da*=-1;
-      s.x += s.speed;
-      if (s.x>W) s.x=0;
-      ctx.beginPath();
-      ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
-      ctx.fillStyle = `rgba(240,225,210,${s.a*.8})`;
-      ctx.fill();
-    }
-
-    requestAnimationFrame(draw);
-  }
-
-  resize();
-  window.addEventListener('resize', resize);
-  requestAnimationFrame(draw);
-
-  /* ─── SCROLL REVEAL ───────────────────────────────────── */
-  const obs = new IntersectionObserver(entries => {
-    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
-  }, { threshold: .12 });
-  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
-</script>
+      window.addEventListener("scroll", activate, { passive:true });
+      activate();
+    })();
+  </script>
 </body>
 </html>
