@@ -36,8 +36,6 @@
     return x * x * (3 - 2 * x);
   };
   const range = (value, from, to) => smooth((value - from) / (to - from));
-  const mix = (from, to, amount) => from + (to - from) * amount;
-
   function resize() {
     dpr = Math.min(window.devicePixelRatio || 1, 2);
     width = window.innerWidth;
@@ -127,20 +125,19 @@
     if (!startTime) startTime = timestamp;
     const elapsed = timestamp - startTime;
     const progress = clamp(elapsed / duration);
-    const approach = range(progress, .03, .62);
-    const settle = range(progress, .69, .98);
+    const approach = range(progress, .03, .7);
+    const reveal = range(progress, .76, .93);
     const maxRadius = Math.hypot(width, height) * .66;
-    const ambientRadius = Math.max(38, Math.min(width, height) * .055);
-    const expandedRadius = 28 + Math.pow(approach, 2.35) * maxRadius;
-    const coreRadius = mix(expandedRadius, ambientRadius, settle);
-    const cx = mix(width / 2, width * .74, settle);
-    const cy = mix(height / 2, height * .4, settle);
-    const zoom = mix(.45 + approach * 3.25, .92, settle);
+    const coreRadius = 28 + Math.pow(approach, 2.35) * maxRadius;
+    const cx = width / 2;
+    const cy = height / 2;
+    const zoom = .45 + approach * 3.25;
 
     context.clearRect(0, 0, width, height);
-    drawStars(cx, cy, approach, 1 - settle * .72);
+    drawStars(cx, cy, approach, 1);
     drawDisk(cx, cy, coreRadius, approach, elapsed, zoom);
     drawCore(cx, cy, coreRadius);
+    canvas.style.opacity = String(1 - reveal);
 
     root.style.setProperty('--page-scale', String(1 - Math.sin(approach * Math.PI) * .045));
     root.style.setProperty('--page-blur', `${Math.sin(approach * Math.PI) * 5}px`);
@@ -183,9 +180,10 @@
     root.style.setProperty('--page-blur', '0px');
     root.style.setProperty('--page-dim', '1');
     loader.classList.add('ambient');
-    canvas.style.opacity = '1';
     replayButton.hidden = false;
-    animationFrame = requestAnimationFrame(ambientFrame);
+    canvas.style.opacity = '0';
+    ambientFrame(performance.now());
+    requestAnimationFrame(() => { canvas.style.opacity = '1'; });
   }
 
   function replayIntro() {
@@ -199,6 +197,7 @@
     ambientPosition.scale = 1;
     replayButton.hidden = true;
     loader.classList.remove('ambient');
+    canvas.style.opacity = '1';
     document.body.classList.add('intro-active');
     root.style.removeProperty('--m87-x');
     root.style.removeProperty('--m87-y');
